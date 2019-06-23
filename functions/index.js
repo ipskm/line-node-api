@@ -132,7 +132,7 @@ exports.logoDetection = functions.region(region).runWith(runtimeOpts)
   .onFinalize(async (object) => {
   const fileName = object.name // ดึงชื่อไฟล์มา
   const userId = fileName.split('.')[0] // แยกชื่อไฟล์ออกมา ซึ่งมันก็คือ userId
-  let event = req.body.events[0]
+
   // ทำนายโลโกที่อยู่ในภาพด้วย Cloud Vision API
   const [result] = await client.logoDetection(`gs://${object.bucket}/${fileName}`)
   const logos = result.logoAnnotations;
@@ -168,7 +168,6 @@ exports.logoDetection = functions.region(region).runWith(runtimeOpts)
   
   // ส่งข้อความหาผู้ใช้ว่าพบโลโกหรือไม่ พร้อม Quick Reply(กรณีมีผลการทำนาย)
   push(userId, msg, quickItems)
-  reply(event.replyToken, { type: 'text', text: quickItems })
 })
 
 /*
