@@ -28,17 +28,37 @@ const LINE_HEADER = {
 
 exports.webhook = functions.region(region).runWith(runtimeOpts).https.onRequest(async (req, res) => {
   let event = req.body.events[0]
-  if (event.message.type === 'image') {
-    doImage(event)
-  } else if (event.message.type === 'text') {
-    postToDialogflow(req)
-  } else {
-    replyPayload(req)
+  switch (event.type) {
+    case 'message':
+      if (event.message.type === 'image') {
+        doImage(event)
+      } else if (event.message.type === 'text') {
+        postToDialogflow(req)
+      } else {
+        replyPayload(req)
+      }
+      break;
+    case 'postback': {
+      let msg = 'ทีมที่คุณเลือกมันเข้ารอบมาชิง UCL ซะทีไหนเล่า ปั๊ดโถ่!';
+      let team = event.postback.data.split('=')[1]
+      if (team.indexOf('liverpool') >= 0 || team.indexOf('tottenham') >= 0) {
+        // Firebase Realtime Database
+        await admin.database().ref('ucl/uid').child(event.source.userId).set(true)
+
+        // Cloud Firestore
+        // await admin.firestore().doc('ucl/final').collection('uid').doc(event.source.userId).set({})
+
+        msg = 'ยินดีด้วยคุณผ่านการยืนยันตัวตน ระบบจะรายงานผลบอลคู่ชิงคู่นี้ให้คุณทุกลมหายใจ';
+      }
+      reply(event.replyToken, { type: 'text', text: msg });
+      break;
+    }
   }
   return res.status(200).send(req.method)
 })
 
 const replyPayload = req => {
+  let event = req.body.events[0]
   return request({
     method: "POST",
     uri: `${LINE_MESSAGING_API}/reply`,
@@ -112,7 +132,7 @@ exports.logoDetection = functions.region(region).runWith(runtimeOpts)
   .onFinalize(async (object) => {
   const fileName = object.name // ดึงชื่อไฟล์มา
   const userId = fileName.split('.')[0] // แยกชื่อไฟล์ออกมา ซึ่งมันก็คือ userId
-  
+  let event = req.body.events[0]
   // ทำนายโลโกที่อยู่ในภาพด้วย Cloud Vision API
   const [result] = await client.logoDetection(`gs://${object.bucket}/${fileName}`)
   const logos = result.logoAnnotations;
@@ -148,7 +168,7 @@ exports.logoDetection = functions.region(region).runWith(runtimeOpts)
   
   // ส่งข้อความหาผู้ใช้ว่าพบโลโกหรือไม่ พร้อม Quick Reply(กรณีมีผลการทำนาย)
   push(userId, msg, quickItems)
-  reply(event.replyToken, { type: 'text', text: itemArray[0] })
+  reply(event.replyToken, { type: 'text', text: quickItems })
 })
 
 /*
