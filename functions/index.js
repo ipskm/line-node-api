@@ -21,7 +21,7 @@ const LINE_HEADER = {
   'Content-Type': 'application/json',
   Authorization: 'Bearer hLJkssN2HV+CgC5v7iKKkGpZONh7oiCK/KkBj7/g9+O/JsqXOmmv+RZmI30dKPt9goBw/kHOB709fWGSofLWPSeE+oUp1I+ezPK/BM2y3uOl1UwppNonMLoL7vqEHSVuep+yD+xTeqiJFex5NFelGwdB04t89/1O/w1cDnyilFU='
 }
-
+//change Bearer (Channel access token)
 /*
   EXPORT FUNCTIONS
 */
@@ -79,7 +79,7 @@ const postToDialogflow = req => {
   req.headers.host = "bots.dialogflow.com";
   return request({
     method: "POST",
-    uri: "https://bots.dialogflow.com/line/2efc9220-9e12-4854-aec1-22ba8a794024/webhook",
+    uri: "https://bots.dialogflow.com/line/2efc9220-9e12-4854-aec1-22ba8a794024/webhook",//Change to your dialogflow webhook
     headers: req.headers,
     body: JSON.stringify(req.body)
   })
@@ -111,7 +111,7 @@ const doImage = async (event) => {
   await fs.writeFileSync(tempLocalFile, buffer)
 
   // กำหนดชื่อ bucket ใน Cloud Storage for Firebase
-  const bucket = admin.storage().bucket('cpe-camp-4th-243901.appspot.com')
+  const bucket = admin.storage().bucket('cpe-camp-4th-243901.appspot.com') //Change your bucket name
 
   // อัพโหลดไฟล์ขึ้น Cloud Storage for Firebase
   await bucket.upload(tempLocalFile, {
